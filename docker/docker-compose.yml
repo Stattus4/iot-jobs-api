@@ -1,0 +1,12 @@
+services:
+  mongodb:
+    image: mongo:latest
+    container_name: iot-jobs-mongodb
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: username
+      MONGO_INITDB_ROOT_PASSWORD: password
+    volumes:
+      - ../mongodb/data/db:/data/db
+    restart: unless-stopped

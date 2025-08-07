@@ -1,0 +1,7 @@
+__pycache__
+.env
+.git/
+.mypy_cache/
+.venv/
+mongodb/
+!mongodb/data/db/.gitkeep
