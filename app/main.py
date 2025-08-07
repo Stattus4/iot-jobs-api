@@ -4,10 +4,10 @@ import logging
 import time
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+from fastapi import APIRouter, FastAPI
 
 from .mongodb import MongoDB
-from .routers import devices
+from .routers.v1 import devices
 
 
 @asynccontextmanager
@@ -41,8 +41,12 @@ app = FastAPI(
     lifespan=lifespan
 )
 
-app.include_router(
+v1_router = APIRouter(prefix="/v1")
+
+v1_router.include_router(
     router=devices.router,
     prefix="/devices",
     tags=["devices"]
 )
+
+app.include_router(v1_router)

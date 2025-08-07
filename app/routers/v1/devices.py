@@ -5,8 +5,8 @@ from datetime import datetime, timezone
 from fastapi import APIRouter, Body, Depends
 from pymongo.asynchronous.database import AsyncDatabase
 
-from ..models.devices import DeviceCreate, DeviceResponse
-from ..mongodb import MongoDB
+from ...models.devices import DeviceCreate, DeviceResponse
+from ...mongodb import MongoDB
 
 
 router = APIRouter()
