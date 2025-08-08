@@ -7,7 +7,7 @@ from contextlib import asynccontextmanager
 from fastapi import APIRouter, FastAPI
 
 from .mongodb import MongoDB
-from .routers.v1 import devices
+from .routers.v1 import device_router
 
 
 @asynccontextmanager
@@ -44,7 +44,7 @@ app = FastAPI(
 v1_router = APIRouter(prefix="/v1")
 
 v1_router.include_router(
-    router=devices.router,
+    router=device_router.router,
     prefix="/devices",
     tags=["devices"]
 )
