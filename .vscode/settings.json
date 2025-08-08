@@ -4,6 +4,9 @@
         "source.fixAll.pylint": "explicit"
     },
     "editor.formatOnSave": true,
+    "files.exclude": {
+        "**/__pycache__": true
+    },
     "python.formatting.provider": "autopep8",
     "python.linting.enabled": true,
     "python.linting.pylintEnabled": true,
