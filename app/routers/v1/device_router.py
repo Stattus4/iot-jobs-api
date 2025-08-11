@@ -1,29 +1,56 @@
 # -*- coding: utf-8 -*-
 
-from datetime import datetime, timezone
+import logging
 
-from fastapi import APIRouter, Body, Depends
-from pymongo.asynchronous.database import AsyncDatabase
+from fastapi import APIRouter, Body, Depends, HTTPException, status
 
 from ...repositories.device_repository import DeviceRepository
-from ...schemas.device_schemas import DeviceCreateRequest, DeviceModel, DeviceResponse, DeviceSearchRequest, DeviceSearchResponse
+from ...models.device_models import DeviceCreateRequest, DeviceResponse, DeviceSearchRequest, DeviceSearchResponse
 from ...services.device_services import DeviceServices
-from ...mongodb import MongoDB
 
 
 async def get_device_services():
-    global device_services
-
-    if device_services is None:
+    if not hasattr(get_device_services, "_instance"):
         device_repository = await DeviceRepository.get_instance()
-        device_services = DeviceServices(device_repository)
 
-    return device_services
+        get_device_services._instance = DeviceServices(
+            device_repository=device_repository
+        )
+
+    return get_device_services._instance
 
 
-device_services: DeviceServices | None = None
+logger = logging.getLogger(name=__name__)
 
 router = APIRouter()
+
+
+@router.delete(
+    path="/{imei}",
+    response_model=None,
+    status_code=status.HTTP_204_NO_CONTENT
+)
+async def delete_device(
+    imei: str,
+    device_services: DeviceServices = Depends(dependency=get_device_services)
+) -> None:
+    try:
+        deleted = await device_services.delete_device(imei=imei)
+
+        if not deleted:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND
+            )
+
+    except HTTPException:
+        raise
+
+    except Exception as e:
+        logger.error("%s", e)
+
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
 
 
 @router.get(
@@ -33,14 +60,30 @@ router = APIRouter()
 )
 async def get_device(
     imei: str,
-    device_services: DeviceServices = Depends(get_device_services)
+    device_services: DeviceServices = Depends(dependency=get_device_services)
 ) -> DeviceResponse:
-    device = await device_services.search_by_imei(imei=imei)
+    try:
+        device = await device_services.search_device_by_imei(imei=imei)
 
-    return DeviceResponse(
-        version="1",
-        device=device
-    )
+        if device is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND
+            )
+
+        return DeviceResponse(
+            version="v1",
+            device=device
+        )
+
+    except HTTPException:
+        raise
+
+    except Exception as e:
+        logger.error("%s", e)
+
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
 
 
 @router.post(
@@ -49,15 +92,25 @@ async def get_device(
     response_model_exclude_none=True
 )
 async def create_device(
-    device: DeviceCreateRequest = Body(...),
-    device_services: DeviceServices = Depends(get_device_services)
+    device_create_request: DeviceCreateRequest = Body(default=...),
+    device_services: DeviceServices = Depends(dependency=get_device_services)
 ) -> DeviceResponse:
-    device = await device_services.create(imei=device.imei)
+    try:
+        device = await device_services.create_device(
+            device_create_request=device_create_request
+        )
 
-    return DeviceResponse(
-        version="1",
-        device=device
-    )
+        return DeviceResponse(
+            version="v1",
+            device=device
+        )
+
+    except Exception as e:
+        logger.error("%s", e)
+
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
 
 
 @router.post(
@@ -66,9 +119,22 @@ async def create_device(
     response_model_exclude_none=True
 )
 async def search_devices(
-    search: DeviceSearchRequest = Body(...),
-    mongodb_database: AsyncDatabase = Depends(MongoDB.get_database)
+    device_search_request: DeviceSearchRequest = Body(default=...),
+    device_services: DeviceServices = Depends(dependency=get_device_services)
 ) -> DeviceSearchResponse:
-    collection = mongodb_database.get_collection("devices")
+    try:
+        devices = await device_services.search_device(
+            device_search_request=device_search_request
+        )
 
-    return []
+        return DeviceSearchResponse(
+            version="v1",
+            devices=devices
+        )
+
+    except Exception as e:
+        logger.error("%s", e)
+
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )

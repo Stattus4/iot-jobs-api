@@ -34,7 +34,7 @@ logging.basicConfig(
 
 logging.Formatter.converter = time.gmtime
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger(name=__name__)
 
 app = FastAPI(
     title="IoT Jobs API",
@@ -49,4 +49,4 @@ v1_router.include_router(
     tags=["devices"]
 )
 
-app.include_router(v1_router)
+app.include_router(router=v1_router)

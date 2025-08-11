@@ -3,7 +3,7 @@
 from pymongo import AsyncMongoClient
 from pymongo.asynchronous.database import AsyncDatabase
 
-from app.config import MONGODB_URI
+from app.settings import settings
 
 
 class MongoDB:
@@ -19,9 +19,9 @@ class MongoDB:
     @classmethod
     async def connect(cls) -> None:
         if cls._client is None:
-            cls._client = AsyncMongoClient(MONGODB_URI)
+            cls._client = AsyncMongoClient(settings.mongodb_uri)
 
-            await cls._client.admin.command("ping")
+            await cls._client.admin.command(command="ping")
 
     @classmethod
     async def get_database(cls) -> AsyncDatabase:
