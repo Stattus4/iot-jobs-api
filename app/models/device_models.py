@@ -29,6 +29,12 @@ class DateRangeFilter(BaseModel):
     lte: datetime | None = None
 
 
+class LastSeenAtFilter(BaseModel):
+    isEmpty: bool | None = None
+    gte: datetime | None = None
+    lte: datetime | None = None
+
+
 class JobQueueFilter(BaseModel):
     isEmpty: bool | None = None
     containsAny: list[str] | None = None
@@ -38,7 +44,7 @@ class DeviceSearchFilter(BaseModel):
     imei: ImeiFilter | None = None
     createdAt: DateRangeFilter | None = None
     updatedAt: DateRangeFilter | None = None
-    lastSeenAt: DateRangeFilter | None = None
+    lastSeenAt: LastSeenAtFilter | None = None
     jobQueue: JobQueueFilter | None = None
 
 

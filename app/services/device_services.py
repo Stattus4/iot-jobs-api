@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from datetime import datetime, timezone
+from typing import Any
 
 from ..repositories.device_repository import DeviceRepository
 from ..models.device_models import DeviceCreateRequest, DeviceModel, DeviceSearchRequest
@@ -19,6 +20,7 @@ class DeviceServices:
             "imei": device_create_request.imei,
             "createdAt": now,
             "updatedAt": now,
+            "lastSeenAt": None,
             "jobQueue": []
         }
 
@@ -40,7 +42,7 @@ class DeviceServices:
     async def search_device(self, device_search_request: DeviceSearchRequest) -> list[DeviceModel]:
         search_filter = device_search_request.filter
 
-        find_filter = {}
+        find_filter: dict[str, Any] = {}
 
         if search_filter.imei is not None:
             if search_filter.imei.in_ is not None:
@@ -61,19 +63,23 @@ class DeviceServices:
                 }
 
         if search_filter.lastSeenAt is not None:
-            if search_filter.lastSeenAt.gte is not None and search_filter.lastSeenAt.lte is not None:
+            if search_filter.lastSeenAt.isEmpty is not None:
+                find_filter["lastSeenAt"] = None if search_filter.lastSeenAt.isEmpty else {"$ne": None}  # noqa
+
+            elif search_filter.lastSeenAt.gte is not None and search_filter.lastSeenAt.lte is not None:
                 find_filter["lastSeenAt"] = {
                     "$gte": search_filter.lastSeenAt.gte,
                     "$lte": search_filter.lastSeenAt.lte
                 }
 
         if search_filter.jobQueue is not None:
-            if search_filter.jobQueue.containsAny is not None:
-                find_filter["jobQueue"] = {
-                    "$in": search_filter.jobQueue.containsAny}
-
-            elif search_filter.jobQueue.isEmpty is not None:
+            if search_filter.jobQueue.isEmpty is not None:
                 find_filter["jobQueue"] = {"$size": 0} if search_filter.jobQueue.isEmpty else {"$ne": []}  # noqa
+
+            elif search_filter.jobQueue.containsAny is not None:
+                find_filter["jobQueue"] = {
+                    "$in": search_filter.jobQueue.containsAny
+                }
 
         documents = await self._device_repository.find(
             find_filter=find_filter
