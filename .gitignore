@@ -3,5 +3,5 @@ __pycache__
 .git/
 .mypy_cache/
 .venv/
-mongodb/
-!mongodb/data/db/.gitkeep
+data/
+!data/db/.gitkeep

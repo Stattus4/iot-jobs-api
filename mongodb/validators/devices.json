@@ -1,0 +1,40 @@
+{
+    "$jsonSchema": {
+        "bsonType": "object",
+        "properties": {
+            "_id": {
+                "bsonType": "objectId"
+            },
+            "imei": {
+                "bsonType": "string",
+                "pattern": "^[0-9]{15}$"
+            },
+            "createdAt": {
+                "bsonType": "date"
+            },
+            "updatedAt": {
+                "bsonType": "date"
+            },
+            "lastSeenAt": {
+                "bsonType": [
+                    "date",
+                    "null"
+                ]
+            },
+            "jobQueue": {
+                "bsonType": "array",
+                "items": {
+                    "bsonType": "string"
+                }
+            }
+        },
+        "required": [
+            "imei",
+            "createdAt",
+            "updatedAt",
+            "lastSeenAt",
+            "jobQueue"
+        ],
+        "additionalProperties": false
+    }
+}
