@@ -7,6 +7,7 @@ from contextlib import asynccontextmanager
 from fastapi import APIRouter, FastAPI
 
 from .mongodb import MongoDB
+from .routers import mongodb_router
 from .routers.v1 import device_router
 
 
@@ -39,6 +40,12 @@ logger = logging.getLogger(name=__name__)
 app = FastAPI(
     title="IoT Jobs API",
     lifespan=lifespan
+)
+
+app.include_router(
+    router=mongodb_router.router,
+    prefix="/mongodb",
+    tags=["mongodb"]
 )
 
 v1_router = APIRouter(prefix="/v1")
