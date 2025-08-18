@@ -9,6 +9,7 @@ from ..mongodb import MongoDB
 
 
 class DeviceRepository():
+
     _collection: AsyncCollection
 
     def __init__(self, collection: AsyncCollection):

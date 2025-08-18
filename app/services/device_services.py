@@ -5,9 +5,11 @@ from typing import Any
 
 from ..models.device_models import DeviceModel, PostDevicesRequest, PostDevicesSearchRequest
 from ..repositories.device_repository import DeviceRepository
+from ..services.builders.device_search_filter_builder import DeviceSearchFilterBuilder
 
 
 class DeviceServices:
+
     _device_repository: DeviceRepository
 
     def __init__(self, device_repository: DeviceRepository):
@@ -35,7 +37,8 @@ class DeviceServices:
 
     async def delete_device(self, imei: str) -> bool:
         delete_filter = {
-            "imei": imei
+            "imei": imei,
+            "job_queue": []
         }
 
         return await self._device_repository.delete_one(
@@ -43,46 +46,11 @@ class DeviceServices:
         )
 
     async def search_device(self, post_devices_search_request: PostDevicesSearchRequest) -> list[DeviceModel]:
-        search_filter = post_devices_search_request.filter
+        device_search_filter = post_devices_search_request.filter
 
-        find_filter: dict[str, Any] = {}
-
-        if search_filter.imei is not None:
-            if search_filter.imei.in_ is not None:
-                find_filter["imei"] = {"$in": search_filter.imei.in_}
-
-        if search_filter.created_at is not None:
-            if search_filter.created_at.gte is not None and search_filter.created_at.lte is not None:
-                find_filter["created_at"] = {
-                    "$gte": search_filter.created_at.gte,
-                    "$lte": search_filter.created_at.lte
-                }
-
-        if search_filter.updated_at is not None:
-            if search_filter.updated_at.gte is not None and search_filter.updated_at.lte is not None:
-                find_filter["updated_at"] = {
-                    "$gte": search_filter.updated_at.gte,
-                    "$lte": search_filter.updated_at.lte
-                }
-
-        if search_filter.last_seen_at is not None:
-            if search_filter.last_seen_at.is_empty is not None:
-                find_filter["last_seen_at"] = None if search_filter.last_seen_at.is_empty else {"$ne": None}  # noqa
-
-            elif search_filter.last_seen_at.gte is not None and search_filter.last_seen_at.lte is not None:
-                find_filter["last_seen_at"] = {
-                    "$gte": search_filter.last_seen_at.gte,
-                    "$lte": search_filter.last_seen_at.lte
-                }
-
-        if search_filter.job_queue is not None:
-            if search_filter.job_queue.is_empty is not None:
-                find_filter["job_queue"] = {"$size": 0} if search_filter.job_queue.is_empty else {"$ne": []}  # noqa
-
-            elif search_filter.job_queue.contains_any is not None:
-                find_filter["job_queue"] = {
-                    "$in": search_filter.job_queue.contains_any
-                }
+        find_filter = DeviceSearchFilterBuilder.build(
+            device_search_filter=device_search_filter
+        )
 
         documents = await self._device_repository.find(
             find_filter=find_filter

@@ -7,6 +7,7 @@ from app.settings import settings
 
 
 class MongoDB:
+
     _client: AsyncMongoClient | None = None
 
     @classmethod
