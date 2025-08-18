@@ -9,19 +9,19 @@
                 "bsonType": "string",
                 "pattern": "^[0-9]{15}$"
             },
-            "createdAt": {
+            "created_at": {
                 "bsonType": "date"
             },
-            "updatedAt": {
+            "updated_at": {
                 "bsonType": "date"
             },
-            "lastSeenAt": {
+            "last_seen_at": {
                 "bsonType": [
                     "date",
                     "null"
                 ]
             },
-            "jobQueue": {
+            "job_queue": {
                 "bsonType": "array",
                 "items": {
                     "bsonType": "string"
@@ -30,10 +30,10 @@
         },
         "required": [
             "imei",
-            "createdAt",
-            "updatedAt",
-            "lastSeenAt",
-            "jobQueue"
+            "created_at",
+            "updated_at",
+            "last_seen_at",
+            "job_queue"
         ],
         "additionalProperties": false
     }

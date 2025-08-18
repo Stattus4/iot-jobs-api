@@ -4,4 +4,4 @@ __pycache__
 .mypy_cache/
 .venv/
 data/
-!data/db/.gitkeep
+!data/.gitkeep

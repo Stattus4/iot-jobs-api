@@ -4,8 +4,8 @@ import logging
 
 from fastapi import APIRouter, Body, Depends, HTTPException, status
 
+from ...models.device_models import DevicesResponse, PostDevicesRequest, PostDevicesSearchRequest, PostDevicesSearchResponse
 from ...repositories.device_repository import DeviceRepository
-from ...models.device_models import DeviceCreateRequest, DeviceResponse, DeviceSearchRequest, DeviceSearchResponse
 from ...services.device_services import DeviceServices
 
 
@@ -25,17 +25,94 @@ logger = logging.getLogger(name=__name__)
 router = APIRouter()
 
 
+@router.post(
+    path="",
+    response_model=DevicesResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Create Device",
+    response_model_exclude_none=False
+)
+async def post_devices(
+    post_devices_request: PostDevicesRequest = Body(default=...),
+    device_services: DeviceServices = Depends(dependency=get_device_services)
+) -> DevicesResponse:
+    try:
+        device = await device_services.create_device(
+            post_devices_request=post_devices_request
+        )
+
+        if device is None:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT
+            )
+
+        return DevicesResponse(
+            version="v1",
+            device=device
+        )
+
+    except HTTPException:
+        raise
+
+    except Exception as e:
+        logger.error("%s", e)
+
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
+
+
+@router.get(
+    path="/{imei}",
+    response_model=DevicesResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Get Device",
+    response_model_exclude_none=False
+)
+async def get_devices(
+    imei: str,
+    device_services: DeviceServices = Depends(dependency=get_device_services)
+) -> DevicesResponse:
+    try:
+        device = await device_services.search_device_by_imei(
+            imei=imei
+        )
+
+        if device is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND
+            )
+
+        return DevicesResponse(
+            version="v1",
+            device=device
+        )
+
+    except HTTPException:
+        raise
+
+    except Exception as e:
+        logger.error("%s", e)
+
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
+
+
 @router.delete(
     path="/{imei}",
     response_model=None,
-    status_code=status.HTTP_204_NO_CONTENT
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Delete Device"
 )
-async def delete_device(
+async def delete_devices(
     imei: str,
     device_services: DeviceServices = Depends(dependency=get_device_services)
 ) -> None:
     try:
-        deleted = await device_services.delete_device(imei=imei)
+        deleted = await device_services.delete_device(
+            imei=imei
+        )
 
         if not deleted:
             raise HTTPException(
@@ -53,81 +130,23 @@ async def delete_device(
         )
 
 
-@router.get(
-    path="/{imei}",
-    response_model=DeviceResponse,
-    response_model_exclude_none=True
-)
-async def get_device(
-    imei: str,
-    device_services: DeviceServices = Depends(dependency=get_device_services)
-) -> DeviceResponse:
-    try:
-        device = await device_services.search_device_by_imei(imei=imei)
-
-        if device is None:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND
-            )
-
-        return DeviceResponse(
-            version="v1",
-            device=device
-        )
-
-    except HTTPException:
-        raise
-
-    except Exception as e:
-        logger.error("%s", e)
-
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
-        )
-
-
-@router.post(
-    path="/",
-    response_model=DeviceResponse,
-    response_model_exclude_none=True
-)
-async def create_device(
-    device_create_request: DeviceCreateRequest = Body(default=...),
-    device_services: DeviceServices = Depends(dependency=get_device_services)
-) -> DeviceResponse:
-    try:
-        device = await device_services.create_device(
-            device_create_request=device_create_request
-        )
-
-        return DeviceResponse(
-            version="v1",
-            device=device
-        )
-
-    except Exception as e:
-        logger.error("%s", e)
-
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
-        )
-
-
 @router.post(
     path="/search",
-    response_model=DeviceSearchResponse,
-    response_model_exclude_none=True
+    response_model=PostDevicesSearchResponse,
+    status_code=status.HTTP_200_OK,
+    summary="Search Devices",
+    response_model_exclude_none=False
 )
-async def search_devices(
-    device_search_request: DeviceSearchRequest = Body(default=...),
+async def post_devices_search(
+    post_devices_search_request: PostDevicesSearchRequest = Body(default=...),
     device_services: DeviceServices = Depends(dependency=get_device_services)
-) -> DeviceSearchResponse:
+) -> PostDevicesSearchResponse:
     try:
         devices = await device_services.search_device(
-            device_search_request=device_search_request
+            post_devices_search_request=post_devices_search_request
         )
 
-        return DeviceSearchResponse(
+        return PostDevicesSearchResponse(
             version="v1",
             devices=devices
         )

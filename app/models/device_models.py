@@ -11,10 +11,10 @@ from pydantic import BaseModel, Field
 
 class DeviceModel(BaseModel):
     imei: str = Field(default=..., min_length=15, max_length=15)
-    createdAt: datetime
-    updatedAt: datetime | None = None
-    lastSeenAt: datetime | None = None
-    jobQueue: list[str] | None = None
+    created_at: datetime
+    updated_at: datetime | None = None
+    last_seen_at: datetime | None = None
+    job_queue: list[str] | None = None
 
 
 # DeviceSearchFilter
@@ -30,40 +30,40 @@ class DateRangeFilter(BaseModel):
 
 
 class LastSeenAtFilter(BaseModel):
-    isEmpty: bool | None = None
+    is_empty: bool | None = None
     gte: datetime | None = None
     lte: datetime | None = None
 
 
 class JobQueueFilter(BaseModel):
-    isEmpty: bool | None = None
-    containsAny: list[str] | None = None
+    is_empty: bool | None = None
+    contains_any: list[str] | None = None
 
 
 class DeviceSearchFilter(BaseModel):
     imei: ImeiFilter | None = None
-    createdAt: DateRangeFilter | None = None
-    updatedAt: DateRangeFilter | None = None
-    lastSeenAt: LastSeenAtFilter | None = None
-    jobQueue: JobQueueFilter | None = None
+    created_at: DateRangeFilter | None = None
+    updated_at: DateRangeFilter | None = None
+    last_seen_at: LastSeenAtFilter | None = None
+    job_queue: JobQueueFilter | None = None
 
 
 # Request / Response
 
 
-class DeviceResponse(BaseModel):
+class DevicesResponse(BaseModel):
     version: str
     device: DeviceModel | None
 
 
-class DeviceCreateRequest(BaseModel):
+class PostDevicesRequest(BaseModel):
     imei: str = Field(default=..., min_length=15, max_length=15)
 
 
-class DeviceSearchRequest(BaseModel):
+class PostDevicesSearchRequest(BaseModel):
     filter: DeviceSearchFilter | None = None
 
 
-class DeviceSearchResponse(BaseModel):
+class PostDevicesSearchResponse(BaseModel):
     version: str
     devices: list[DeviceModel] = Field(default_factory=list)

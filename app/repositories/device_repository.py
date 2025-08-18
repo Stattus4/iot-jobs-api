@@ -3,6 +3,7 @@
 from typing import Any
 
 from pymongo.asynchronous.collection import AsyncCollection
+from pymongo.errors import DuplicateKeyError
 
 from ..mongodb import MongoDB
 
@@ -42,7 +43,13 @@ class DeviceRepository():
             filter=find_filter
         )
 
-    async def insert_one(self, document: dict) -> None:
-        await self._collection.insert_one(
-            document=document
-        )
+    async def insert_one(self, document: dict) -> bool:
+        try:
+            await self._collection.insert_one(
+                document=document
+            )
+
+        except DuplicateKeyError:
+            return False
+
+        return True

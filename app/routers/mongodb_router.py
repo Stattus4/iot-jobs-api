@@ -88,101 +88,6 @@ async def delete_collections(
 
 
 @router.get(
-    path="/collections/{collection_name}/validator",
-    response_model=dict[str, Any] | None,
-    status_code=status.HTTP_200_OK,
-    summary="Get Collection Validator",
-    response_model_exclude_none=False
-)
-async def get_collections_validator(
-    collection_name: str,
-    mongodb_services: MongoDBServices = Depends(
-        dependency=get_mongodb_services
-    )
-) -> dict[str, Any] | None:
-    try:
-        return await mongodb_services.get_collection_validator(
-            collection_name=collection_name
-        )
-
-    except Exception as e:
-        logger.error("%s", e)
-
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
-        )
-
-
-@router.put(
-    path="/collections/{collection_name}/validator",
-    response_model=None,
-    status_code=status.HTTP_200_OK,
-    summary="Update Collection Validator",
-    response_model_exclude_none=False
-)
-async def put_collections_validator(
-    collection_name: str,
-    put_collections_validator_request: PutCollectionsValidatorRequest = Body(
-        default=...
-    ),
-    mongodb_services: MongoDBServices = Depends(
-        dependency=get_mongodb_services
-    )
-) -> None:
-    try:
-        await mongodb_services.update_collection_validator(
-            collection_name=collection_name,
-            put_collections_validator_request=put_collections_validator_request
-        )
-
-    except Exception as e:
-        logger.error("%s", e)
-
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
-        )
-
-
-@router.get(
-    path="/collections/{collection_name}/validator/validation-error-summary",
-    response_model=dict[str, Any],
-    status_code=status.HTTP_200_OK,
-    summary="Get Collection Validator Validation Error Summary",
-    response_model_exclude_none=False
-)
-async def get_collections_validator_validation_error_summary(
-    collection_name: str,
-    mongodb_services: MongoDBServices = Depends(
-        dependency=get_mongodb_services
-    )
-) -> dict[str, Any]:
-    try:
-        validator = await mongodb_services.get_collection_validator(
-            collection_name=collection_name
-        )
-
-        if validator is None:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND
-            )
-
-        return await mongodb_services.get_collection_validator_validation_error_summary(
-            collection_name=collection_name,
-            validator=validator
-        )
-
-    except HTTPException:
-        raise
-
-    except Exception as e:
-        logger.error("%s", e)
-
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
-        )
-
-
-@router.get(
     path="/collections/{collection_name}/index",
     response_model=list[dict[str, Any]],
     status_code=status.HTTP_200_OK,
@@ -270,6 +175,101 @@ async def delete_collections_index(
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND
             )
+
+    except HTTPException:
+        raise
+
+    except Exception as e:
+        logger.error("%s", e)
+
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
+
+
+@router.get(
+    path="/collections/{collection_name}/validator",
+    response_model=dict[str, Any] | None,
+    status_code=status.HTTP_200_OK,
+    summary="Get Collection Validator",
+    response_model_exclude_none=False
+)
+async def get_collections_validator(
+    collection_name: str,
+    mongodb_services: MongoDBServices = Depends(
+        dependency=get_mongodb_services
+    )
+) -> dict[str, Any] | None:
+    try:
+        return await mongodb_services.get_collection_validator(
+            collection_name=collection_name
+        )
+
+    except Exception as e:
+        logger.error("%s", e)
+
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
+
+
+@router.put(
+    path="/collections/{collection_name}/validator",
+    response_model=None,
+    status_code=status.HTTP_200_OK,
+    summary="Update Collection Validator",
+    response_model_exclude_none=False
+)
+async def put_collections_validator(
+    collection_name: str,
+    put_collections_validator_request: PutCollectionsValidatorRequest = Body(
+        default=...
+    ),
+    mongodb_services: MongoDBServices = Depends(
+        dependency=get_mongodb_services
+    )
+) -> None:
+    try:
+        await mongodb_services.update_collection_validator(
+            collection_name=collection_name,
+            put_collections_validator_request=put_collections_validator_request
+        )
+
+    except Exception as e:
+        logger.error("%s", e)
+
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
+
+
+@router.get(
+    path="/collections/{collection_name}/validator/validation-error-summary",
+    response_model=dict[str, Any],
+    status_code=status.HTTP_200_OK,
+    summary="Get Collection Validator Validation Error Summary",
+    response_model_exclude_none=False
+)
+async def get_collections_validator_validation_error_summary(
+    collection_name: str,
+    mongodb_services: MongoDBServices = Depends(
+        dependency=get_mongodb_services
+    )
+) -> dict[str, Any]:
+    try:
+        validator = await mongodb_services.get_collection_validator(
+            collection_name=collection_name
+        )
+
+        if validator is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND
+            )
+
+        return await mongodb_services.get_collection_validator_validation_error_summary(
+            collection_name=collection_name,
+            validator=validator
+        )
 
     except HTTPException:
         raise
