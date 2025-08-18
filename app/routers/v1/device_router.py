@@ -28,7 +28,7 @@ router = APIRouter()
 @router.post(
     path="",
     response_model=DevicesResponse,
-    status_code=status.HTTP_200_OK,
+    status_code=status.HTTP_201_CREATED,
     summary="Create Device",
     response_model_exclude_none=False
 )
