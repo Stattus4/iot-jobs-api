@@ -7,7 +7,6 @@ from bson import json_util
 from jsonschema import validate, ValidationError
 from pymongo import ASCENDING, DESCENDING
 from pymongo.asynchronous.database import AsyncDatabase
-from pymongo.errors import CollectionInvalid, OperationFailure
 
 from ..models.mongodb_models import PostCollectionsIndexRequest, PostCollectionsRequest, PutCollectionsValidatorRequest
 from ..mongodb import MongoDB
@@ -23,22 +22,16 @@ class MongoDBServices:
     async def create_collection(
         self,
         post_collections_request: PostCollectionsRequest
-    ) -> bool:
-        try:
-            await self._database.create_collection(
-                name=post_collections_request.collection_name
-            )
-
-        except CollectionInvalid:
-            return False
-
-        return True
+    ) -> None:
+        await self._database.create_collection(
+            name=post_collections_request.collection_name
+        )
 
     async def create_collection_index(
         self,
         collection_name: str,
         post_collections_index_request: PostCollectionsIndexRequest
-    ) -> bool:
+    ) -> None:
         order_map = {
             "ASCENDING": ASCENDING,
             "DESCENDING": DESCENDING
@@ -52,16 +45,10 @@ class MongoDBServices:
             (field, order_map[order]) for field, order in post_collections_index_request.key.items()
         ]
 
-        try:
-            await collection.create_index(
-                keys=keys,
-                unique=post_collections_index_request.unique
-            )
-
-        except OperationFailure:
-            return False
-
-        return True
+        await collection.create_index(
+            keys=keys,
+            unique=post_collections_index_request.unique
+        )
 
     async def delete_collection(
         self,
@@ -75,20 +62,14 @@ class MongoDBServices:
         self,
         collection_name: str,
         index_name: str
-    ) -> bool:
-        try:
-            collection = self._database.get_collection(
-                name=collection_name
-            )
+    ) -> None:
+        collection = self._database.get_collection(
+            name=collection_name
+        )
 
-            await collection.drop_index(
-                index_or_name=index_name
-            )
-
-        except OperationFailure:
-            return False
-
-        return True
+        await collection.drop_index(
+            index_or_name=index_name
+        )
 
     async def get_collection_indexes(
         self,

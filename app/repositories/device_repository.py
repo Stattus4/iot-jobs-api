@@ -5,6 +5,7 @@ from typing import Any
 from pymongo.asynchronous.collection import AsyncCollection
 from pymongo.errors import DuplicateKeyError
 
+from ..errors.repository_errors import DeviceNotFoundError, DuplicateDeviceError
 from ..mongodb import MongoDB
 
 
@@ -25,12 +26,13 @@ class DeviceRepository():
 
         return cls(collection)
 
-    async def delete_one(self, delete_filter: dict) -> bool:
+    async def delete_one(self, delete_filter: dict) -> None:
         delete_result = await self._collection.delete_one(
             filter=delete_filter
         )
 
-        return delete_result.deleted_count == 1
+        if delete_result.deleted_count == 0:
+            raise DeviceNotFoundError()
 
     async def find(self, find_filter: dict) -> list[dict[str, Any]]:
         cursor = self._collection.find(
@@ -39,18 +41,23 @@ class DeviceRepository():
 
         return await cursor.to_list(length=None)
 
-    async def find_one(self, find_filter: dict) -> dict[str, Any] | None:
-        return await self._collection.find_one(
+    async def find_one(self, find_filter: dict) -> dict[str, Any]:
+        document = await self._collection.find_one(
             filter=find_filter
         )
 
-    async def insert_one(self, document: dict) -> bool:
+        if document is None:
+            raise DeviceNotFoundError()
+
+        return document
+
+    async def insert_one(self, document: dict[str, Any]) -> dict[str, Any]:
         try:
             await self._collection.insert_one(
                 document=document
             )
 
-        except DuplicateKeyError:
-            return False
+            return document
 
-        return True
+        except DuplicateKeyError:
+            raise DuplicateDeviceError()

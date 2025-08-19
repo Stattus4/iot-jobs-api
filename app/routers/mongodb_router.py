@@ -3,6 +3,7 @@
 import logging
 from typing import Any
 
+from pymongo.errors import CollectionInvalid, OperationFailure
 from fastapi import APIRouter, Body, Depends, HTTPException, status
 
 from ..models.mongodb_models import PostCollectionsIndexRequest, PostCollectionsRequest, PutCollectionsValidatorRequest
@@ -38,17 +39,16 @@ async def post_collections(
     )
 ) -> None:
     try:
-        created = await mongodb_services.create_collection(
+        await mongodb_services.create_collection(
             post_collections_request=post_collections_request
         )
 
-        if not created:
-            raise HTTPException(
-                status_code=status.HTTP_409_CONFLICT
-            )
+    except CollectionInvalid as e:
+        logger.error("%s", e)
 
-    except HTTPException:
-        raise
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT
+        )
 
     except Exception as e:
         logger.error("%s", e)
@@ -75,9 +75,6 @@ async def delete_collections(
         await mongodb_services.delete_collection(
             collection_name=collection_name
         )
-
-    except HTTPException:
-        raise
 
     except Exception as e:
         logger.error("%s", e)
@@ -130,18 +127,17 @@ async def post_collections_index(
     )
 ) -> None:
     try:
-        created = await mongodb_services.create_collection_index(
+        await mongodb_services.create_collection_index(
             collection_name=collection_name,
             post_collections_index_request=post_collections_index_request
         )
 
-        if not created:
-            raise HTTPException(
-                status_code=status.HTTP_409_CONFLICT
-            )
+    except OperationFailure:
+        logger.error("%s", e)
 
-    except HTTPException:
-        raise
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT
+        )
 
     except Exception as e:
         logger.error("%s", e)
@@ -166,18 +162,17 @@ async def delete_collections_index(
     )
 ) -> None:
     try:
-        deleted = await mongodb_services.delete_collection_index(
+        await mongodb_services.delete_collection_index(
             collection_name=collection_name,
             index_name=index_name
         )
 
-        if not deleted:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND
-            )
+    except OperationFailure:
+        logger.error("%s", e)
 
-    except HTTPException:
-        raise
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND
+        )
 
     except Exception as e:
         logger.error("%s", e)

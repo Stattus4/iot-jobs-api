@@ -3,6 +3,8 @@
 from datetime import datetime, timezone
 from typing import Any
 
+from ..errors.repository_errors import DeviceNotFoundError, DuplicateDeviceError
+from ..errors.service_errors import DeviceAlreadyExistsError, DeviceDeletionError, DeviceDoesNotExistError
 from ..models.device_models import DeviceModel, PostDevicesRequest, PostDevicesSearchRequest
 from ..repositories.device_repository import DeviceRepository
 from ..services.builders.device_search_filter_builder import DeviceSearchFilterBuilder
@@ -15,10 +17,10 @@ class DeviceServices:
     def __init__(self, device_repository: DeviceRepository):
         self._device_repository = device_repository
 
-    async def create_device(self, post_devices_request: PostDevicesRequest) -> DeviceModel | None:
+    async def create_device(self, post_devices_request: PostDevicesRequest) -> DeviceModel:
         now = datetime.now(timezone.utc)
 
-        device = {
+        document = {
             "imei": post_devices_request.imei,
             "created_at": now,
             "updated_at": now,
@@ -26,24 +28,42 @@ class DeviceServices:
             "job_queue": []
         }
 
-        created = await self._device_repository.insert_one(
-            document=device
-        )
+        try:
+            inserted_document = await self._device_repository.insert_one(
+                document=document
+            )
 
-        if not created:
-            return None
+            return DeviceModel(**inserted_document)
 
-        return DeviceModel(**device)
+        except DuplicateDeviceError:
+            raise DeviceAlreadyExistsError()
 
-    async def delete_device(self, imei: str) -> bool:
+    async def delete_device(self, imei: str) -> None:
+        find_filter = {
+            "imei": imei
+        }
+
         delete_filter = {
             "imei": imei,
             "job_queue": []
         }
 
-        return await self._device_repository.delete_one(
-            delete_filter=delete_filter
-        )
+        try:
+            document = await self._device_repository.find_one(
+                find_filter=find_filter
+            )
+
+            device = DeviceModel(**document)
+
+            if len(device.job_queue) > 0:
+                raise DeviceDeletionError()
+
+            await self._device_repository.delete_one(
+                delete_filter=delete_filter
+            )
+
+        except DeviceNotFoundError:
+            raise DeviceDoesNotExistError()
 
     async def search_device(self, post_devices_search_request: PostDevicesSearchRequest) -> list[DeviceModel]:
         device_search_filter = post_devices_search_request.filter
@@ -58,16 +78,17 @@ class DeviceServices:
 
         return [DeviceModel(**document) for document in documents]
 
-    async def search_device_by_imei(self, imei: str) -> DeviceModel | None:
+    async def search_device_by_imei(self, imei: str) -> DeviceModel:
         find_filter = {
             "imei": imei
         }
 
-        device = await self._device_repository.find_one(
-            find_filter=find_filter
-        )
+        try:
+            document = await self._device_repository.find_one(
+                find_filter=find_filter
+            )
 
-        if device is not None:
-            return DeviceModel(**device)
+            return DeviceModel(**document)
 
-        return None
+        except DeviceNotFoundError:
+            raise DeviceDoesNotExistError()

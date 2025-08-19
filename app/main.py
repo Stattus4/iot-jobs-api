@@ -6,6 +6,8 @@ from contextlib import asynccontextmanager
 
 from fastapi import APIRouter, FastAPI
 
+from .exception_handlers.exception_handlers import register_exception_handlers
+from .exception_handlers.service_exception_handlers import register_service_exception_handlers
 from .mongodb import MongoDB
 from .routers import mongodb_router
 from .routers.v1 import device_router
@@ -40,6 +42,14 @@ logger = logging.getLogger(name=__name__)
 app = FastAPI(
     title="IoT Jobs API",
     lifespan=lifespan
+)
+
+register_exception_handlers(
+    app=app
+)
+
+register_service_exception_handlers(
+    app=app
 )
 
 app.include_router(

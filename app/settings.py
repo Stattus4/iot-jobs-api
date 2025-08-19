@@ -5,6 +5,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
+
     mongodb_uri: str = Field(default=..., env="MONGODB_URI")  # type: ignore
 
     model_config = SettingsConfigDict(
