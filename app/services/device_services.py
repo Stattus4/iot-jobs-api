@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 from datetime import datetime, timezone
-from typing import Any
 
 from ..errors.repository_errors import DeviceNotFoundError, DuplicateDeviceError
 from ..errors.service_errors import DeviceAlreadyExistsError, DeviceDeletionError, DeviceDoesNotExistError
@@ -84,6 +83,8 @@ class DeviceServices:
         }
 
         try:
+            # raise RuntimeError("Dummy Exception for Test Only!")
+
             document = await self._device_repository.find_one(
                 find_filter=find_filter
             )

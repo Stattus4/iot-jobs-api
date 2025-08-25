@@ -1,13 +1,14 @@
 # -*- coding: utf-8 -*-
 
 import logging
-import time
 from contextlib import asynccontextmanager
 
 from fastapi import APIRouter, FastAPI
 
 from .exception_handlers.exception_handlers import register_exception_handlers
 from .exception_handlers.service_exception_handlers import register_service_exception_handlers
+from .logging_config import LoggingConfig
+from .middlewares.request_id_middleware import RequestIdMiddleware
 from .mongodb import MongoDB
 from .routers import mongodb_router
 from .routers.v1 import device_router
@@ -30,12 +31,7 @@ async def lifespan(app: FastAPI):
     logger.info("MongoDB connection closed")
 
 
-logging.basicConfig(
-    format="%(asctime)s | %(levelname)s | %(name)s | %(filename)s:%(lineno)d | %(message)s",
-    level=logging.INFO
-)
-
-logging.Formatter.converter = time.gmtime
+LoggingConfig.config()
 
 logger = logging.getLogger(name=__name__)
 
@@ -50,6 +46,10 @@ register_exception_handlers(
 
 register_service_exception_handlers(
     app=app
+)
+
+app.add_middleware(
+    middleware_class=RequestIdMiddleware
 )
 
 app.include_router(

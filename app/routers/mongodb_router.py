@@ -15,7 +15,9 @@ async def get_mongodb_services():
     if not hasattr(get_mongodb_services, "_instance"):
         mongodb_database = await MongoDB.get_database()
 
-        get_mongodb_services._instance = MongoDBServices(mongodb_database)
+        get_mongodb_services._instance = MongoDBServices(
+            database=mongodb_database
+        )
 
     return get_mongodb_services._instance
 
@@ -30,6 +32,10 @@ router = APIRouter()
     response_model=None,
     status_code=status.HTTP_201_CREATED,
     summary="Create Collection",
+    responses={
+        status.HTTP_409_CONFLICT: {},
+        status.HTTP_500_INTERNAL_SERVER_ERROR: {}
+    },
     response_model_exclude_none=False
 )
 async def post_collections(
@@ -63,6 +69,9 @@ async def post_collections(
     response_model=None,
     status_code=status.HTTP_204_NO_CONTENT,
     summary="Delete Collection",
+    responses={
+        status.HTTP_500_INTERNAL_SERVER_ERROR: {}
+    },
     response_model_exclude_none=False
 )
 async def delete_collections(
@@ -89,6 +98,9 @@ async def delete_collections(
     response_model=list[dict[str, Any]],
     status_code=status.HTTP_200_OK,
     summary="Get Collection Indexes",
+    responses={
+        status.HTTP_500_INTERNAL_SERVER_ERROR: {}
+    },
     response_model_exclude_none=False
 )
 async def get_collections_index(
@@ -115,6 +127,10 @@ async def get_collections_index(
     response_model=None,
     status_code=status.HTTP_201_CREATED,
     summary="Create Collection Index",
+    responses={
+        status.HTTP_409_CONFLICT: {},
+        status.HTTP_500_INTERNAL_SERVER_ERROR: {}
+    },
     response_model_exclude_none=False
 )
 async def post_collections_index(
@@ -132,7 +148,7 @@ async def post_collections_index(
             post_collections_index_request=post_collections_index_request
         )
 
-    except OperationFailure:
+    except OperationFailure as e:
         logger.error("%s", e)
 
         raise HTTPException(
@@ -152,6 +168,10 @@ async def post_collections_index(
     response_model=None,
     status_code=status.HTTP_204_NO_CONTENT,
     summary="Delete Collection Index",
+    responses={
+        status.HTTP_404_NOT_FOUND: {},
+        status.HTTP_500_INTERNAL_SERVER_ERROR: {}
+    },
     response_model_exclude_none=False
 )
 async def delete_collections_index(
@@ -167,7 +187,7 @@ async def delete_collections_index(
             index_name=index_name
         )
 
-    except OperationFailure:
+    except OperationFailure as e:
         logger.error("%s", e)
 
         raise HTTPException(
@@ -187,6 +207,9 @@ async def delete_collections_index(
     response_model=dict[str, Any] | None,
     status_code=status.HTTP_200_OK,
     summary="Get Collection Validator",
+    responses={
+        status.HTTP_500_INTERNAL_SERVER_ERROR: {}
+    },
     response_model_exclude_none=False
 )
 async def get_collections_validator(
@@ -213,6 +236,9 @@ async def get_collections_validator(
     response_model=None,
     status_code=status.HTTP_200_OK,
     summary="Update Collection Validator",
+    responses={
+        status.HTTP_500_INTERNAL_SERVER_ERROR: {}
+    },
     response_model_exclude_none=False
 )
 async def put_collections_validator(
@@ -243,6 +269,10 @@ async def put_collections_validator(
     response_model=dict[str, Any],
     status_code=status.HTTP_200_OK,
     summary="Get Collection Validator Validation Error Summary",
+    responses={
+        status.HTTP_404_NOT_FOUND: {},
+        status.HTTP_500_INTERNAL_SERVER_ERROR: {}
+    },
     response_model_exclude_none=False
 )
 async def get_collections_validator_validation_error_summary(

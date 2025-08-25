@@ -9,7 +9,6 @@ from pymongo import ASCENDING, DESCENDING
 from pymongo.asynchronous.database import AsyncDatabase
 
 from ..models.mongodb_models import PostCollectionsIndexRequest, PostCollectionsRequest, PutCollectionsValidatorRequest
-from ..mongodb import MongoDB
 
 
 class MongoDBServices:

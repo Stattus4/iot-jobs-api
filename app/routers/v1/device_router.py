@@ -4,6 +4,7 @@ from fastapi import APIRouter, Body, Depends, status
 
 from ...errors.service_errors import DeviceAlreadyExistsError, DeviceDeletionError, DeviceDoesNotExistError
 from ...models.device_models import DevicesResponse, PostDevicesRequest, PostDevicesSearchRequest, PostDevicesSearchResponse
+from ...models.error_models import ErrorResponse
 from ...repositories.device_repository import DeviceRepository
 from ...services.device_services import DeviceServices
 
@@ -28,9 +29,8 @@ router = APIRouter()
     status_code=status.HTTP_201_CREATED,
     summary="Create Device",
     responses={
-        status.HTTP_409_CONFLICT: {
-            "description": DeviceAlreadyExistsError.__doc__
-        }
+        status.HTTP_409_CONFLICT: {"model": ErrorResponse},
+        status.HTTP_500_INTERNAL_SERVER_ERROR: {"model": ErrorResponse}
     },
     response_model_exclude_none=False
 )
@@ -54,9 +54,8 @@ async def post_devices(
     status_code=status.HTTP_200_OK,
     summary="Get Device",
     responses={
-        status.HTTP_404_NOT_FOUND: {
-            "description": DeviceDoesNotExistError.__doc__
-        }
+        status.HTTP_404_NOT_FOUND: {"model": ErrorResponse},
+        status.HTTP_500_INTERNAL_SERVER_ERROR: {"model": ErrorResponse}
     },
     response_model_exclude_none=False
 )
@@ -80,12 +79,9 @@ async def get_devices(
     status_code=status.HTTP_204_NO_CONTENT,
     summary="Delete Device",
     responses={
-        status.HTTP_404_NOT_FOUND: {
-            "description": DeviceDoesNotExistError.__doc__
-        },
-        status.HTTP_409_CONFLICT: {
-            "description": DeviceDeletionError.__doc__
-        }
+        status.HTTP_404_NOT_FOUND: {"model": ErrorResponse},
+        status.HTTP_409_CONFLICT: {"model": ErrorResponse},
+        status.HTTP_500_INTERNAL_SERVER_ERROR: {"model": ErrorResponse}
     }
 )
 async def delete_devices(
