@@ -29,7 +29,7 @@ class LoggingConfig:
         handler.addFilter(RequestIdFilter())
         handler.setFormatter(formatter)
 
-        logger = getLogger()
+        logger = getLogger(name=__name__)
 
         logger.setLevel(INFO)
         logger.addHandler(handler)

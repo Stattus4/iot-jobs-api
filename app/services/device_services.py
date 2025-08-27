@@ -83,8 +83,6 @@ class DeviceServices:
         }
 
         try:
-            # raise RuntimeError("Dummy Exception for Test Only!")
-
             document = await self._device_repository.find_one(
                 find_filter=find_filter
             )
